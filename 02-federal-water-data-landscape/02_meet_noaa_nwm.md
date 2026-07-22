@@ -39,7 +39,7 @@ NWM output is entirely modeled, not measured directly. It couples a land-surface
 
 ## Usage and support
 
-- **Citation:** NOAA provides a standard citation format for its NWM datasets. For example, "NOAA National Water Model [dataset name] was accessed on [DATE] from [dataset URL]." Cite the specific product/version and access URL you used (operational NOMADS feed, AWS, or Google Cloud archive).
+- **Citation:** NOAA publishes a standard format on each dataset's AWS Registry of Open Data listing, e.g. for the Short-Range Forecast: *"NOAA National Water Model Short-Range Forecast was accessed on [DATE] from https://registry.opendata.aws/noaa-nwm-pds."* Swap in the specific product name, version, and dataset URL you actually used (e.g. the [Retrospective archive](https://registry.opendata.aws/nwm-archive/) instead of the Short-Range Forecast).
 - **License/access:** NWM output is open data, distributed through the NOAA Open Data Dissemination (NODD) program via AWS and Google Cloud, as well as a 48-hour rolling window on NOAA's NOMADS server.
 - **Change over time:** Values can shift not just with new observations (in Analysis & Assimilation) but with model version upgrades — treat any long time series spanning a version change as non-homogeneous.
 - **Contact:** For questions about data content, quality, or model methodology, contact NOAA's Office of Water Prediction (contacts listed on the [NWM about page](https://water.noaa.gov/about/nwm)). For questions specifically about data delivery via NODD (AWS/Google Cloud access), email nodd@noaa.gov.
