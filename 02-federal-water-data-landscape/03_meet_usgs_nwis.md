@@ -7,6 +7,7 @@
 ## Terminology
 
 [define key terms used to describe this dataset; include mappings to some common terminolgy we will use in the training, such as location identifier, variable, variable unit, data quality flags -- see slide 9 of the pitch deck]
+[Need to mention the distinction between active and inactive gages and that some dataset searches will return gage that are no longer operational]
 
 ## Dataset derivation
 
@@ -23,6 +24,7 @@
 ## Data content
 
 [talk about the variable + units + valid ranges, and possibly related variables that aren't the main focus of this page; talk about known limitations/uncertainties such as QA/QC flags, missing data, gaps]
+[provisional vs approved data]
 
 ## Usage and support
 
