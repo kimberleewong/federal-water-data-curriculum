@@ -1,14 +1,144 @@
 # Retrieve NOAA NWM streamflow data
 
-[overview of downloading data to use. can many any non-programmatic access patterns here if there are any. note that NOAA NWM doesn't really have an API -- the data are stored as files and made available online (but more time may reveal a different storage option here: https://nomads.ncep.noaa.gov/pub/data/nccf/com/nwm/prod/nwm.20260720/)]
+NOAA National Water Model (NWM) streamflow data lives in a few different places depending on what you need. The full model output has no REST API behind it: it's stored as NetCDF files, made available through file listings and mirrored to cloud storage (Google Cloud Platform, AWS). NOAA does host a separate, official API, [NWPS](https://api.water.noaa.gov/nwps/v1/docs/), but it only covers NWM output at NWPS's ~4,000 established forecast locations, not the full 2.7-million-reach domain, so we're not going to focus on that here.
 
-## API structure
 
-[overview of API and how the data are structured]
+1. **Programmatic data discovery**: NWM identifies reaches using COMIDs, which come from the NHDPlusV2 hydrography dataset (a USGS product, not a NOAA one). Before you can download streamflow for a location, you first need to find the COMID that corresponds to it. This is handled by USGS's Network Linked Data Index (NLDI), a separate service from wherever the NWM output files live.
+1. **Programmatic data downloads**: once you have COMID(s) in hand, `hydrotools` (from NOAA-OWP) retrieves forecast values. This module focuses on **forecast** data. NWM's forecast products (short/medium/long range) are what set it apart from other streamflow datasets, since they predict rather than just record. For historical, observed streamflow, USGS NWIS is the recommended source instead; see the note at the end of this section for the one case (ungauged reaches) where NWM's own historical/retrospective archive is still relevant.
 
-## Python library: `hydrotools`
+If you already know your COMID(s), you can skip programmatic data discovery.
 
-[provide the installation instructions and give the highlights for the main functions someone should use to access and download data]
+## Tools and environment setup
+
+we're using a dedicated conda environment for this one so its dependencies don't collide with what any other page needs. 
+
+```bash
+conda create -n nwm-env python=3.11 -y
+conda activate nwm-envpython3 -m
+pip install --upgrade pip wheelpython3 -m
+pip install pynhd hydrotools.nwm_client_new hydrotools.nwis_client nest_asyncio
+``` 
+
+This installs everything needed for both discovery (`pynhd`) and downloads (`hydrotools`) in one place, so you don't have to juggle two separate environments to go from "find a COMID" to "pull its forecast" within the same script or notebook.
+
+## Programmatic data discovery
+
+Before you download or try to access the data itself, a common first step is to *discover* or *find* the specific reach(es) you need. You don't want to page through the whole NWM domain just to learn which COMID matches your location. Doing this discovery step first also lets you build a COMID list once and reuse it, which matters more once you get to the spatial-scaling FAQ below.
+
+A GUI (graphic user interface) approach exists here too: NOAA's own [interactive map](https://water.noaa.gov/map) lets you click a point and read off a reach ID directly, which is functionally the same identifier as a COMID. That's a fine way to explore or spot-check, but a programmatic discovery step keeps your work reproducible and reusable, and it's worth capturing in code even if you first found the reach by clicking around.
+
+### USGS Network Linked Data Index (NLDI)
+
+NOAA NWM identifies stream reaches using **COMIDs** (also called `nwm_feature_id` or ComID). The NLDI can:
+
+* Find the COMID for a point on the map (point-in-polygon lookup against NHDPlusV2 catchments)
+* Find the COMID(s) associated with a known site, e.g. a USGS gage
+* Navigate the river network upstream/downstream from a starting COMID (upstream mainstem, upstream with tributaries, downstream mainstem, downstream with diversions), useful for "all reaches in this watershed" style questions
+
+**Example: what's the COMID for the stream closest CUAHSI office?**
+
+```python
+from pynhd import NLDI
+from shapely.geometry import Point
+import geopandas as gpd
+
+nldi = NLDI()
+
+point = gpd.GeoSeries([Point(-71.1739, 42.4238)], crs=4326)
+comid_gdf = nldi.feature_byloc(point, fsource="comid")
+comid = int(comid_gdf.comid.values[0])
+
+print(f"Nearest COMID: {comid}")
+
+```
+
+`feature_byloc` queries the modernized USGS endpoint to snap your spatial point directly to the closest NHDPlus stream segment, returning a comprehensive GeoDataFrame.
+
+A more direct approach using the raw NLDI REST endpoint (point-in-polygon lookup):
+
+```
+https://api.water.usgs.gov/nldi/linked-data/comid/position?coords=POINT(-71.1739 42.4238)
+```
+
+Once you have your desired COMID(s), move on to downloads below.
+
+## Programmatic data downloads
+
+While the discovery step above uses a USGS service, downloading the actual forecast values is handled by NOAA-OWP tooling.
+
+### `hydrotools`
+
+`hydrotools` (OWPHydroTools, from NOAA-OWP) is the recommended way to pull NWM **forecast** output, short_range, medium_range, long_range, and analysis_assimilation, into a `pandas.DataFrame` once you know which COMID(s) you want. You never need to open or manage a NetCDF file yourself; `hydrotools` fetches and parses the underlying files behind the `.get()` call. 
+
+**Key pieces**
+
+* `hydrotools.nwm_client_new`: retrieve NWM streamflow forecasts 
+*note: this will eventually be changed to `hydrotools.nwm_client` for v8.0+*
+* `hydrotools.waterdata_client`:  the modernized replacement for the legacy `nwis_client`, optimized to pull matching USGS NWIS real-time and historical streamflow observations for direct forecast evaluation and baseline comparisons.
+* Canonical column names used across all subpackages: `value`, `value_time`, `variable_name`, `nwm_feature_id` (the COMID), `usgs_site_code`, etc. This consistency makes it easy to join NWM and USGS data.
+
+**Example: short-range forecast for a single reach**
+
+```python
+
+# prevents a common, known error that can occur in JupyterHub
+import nest_asyncio
+nest_asyncio.apply()
+
+from hydrotools.nwm_client_new.NWMFileClient import NWMFileClient
+from hydrotools.nwm_client_new.HTTPFileCatalog import HTTPFileCatalog
+import pandas as pd
+
+# 1. Target the exact production server URL from your index search
+catalog = HTTPFileCatalog("https://nomads.ncep.noaa.gov/pub/data/nccf/com/nwm/prod/")
+model_data_client = NWMFileClient(catalog=catalog)
+
+# 2. Set reference time
+yesterday = pd.Timestamp.utcnow() - pd.Timedelta("1D")
+
+# 3. Retrieve forecast data
+forecast_data = model_data_client.get(
+    configurations = ["short_range"],
+    reference_times = [yesterday],
+    nwm_feature_ids = [comid] # from discovery step
+    )
+
+# 4. Look at the data
+print(forecast_data.head())
+```
+
+**A note on historical data:** for observed, historical streamflow, use USGS NWIS (`hydrotools.nwis_client`) rather than NWM's own retrospective archive. NWIS is the authoritative source for gauged, historical data and doesn't require the model-file access patterns covered above. The one exception is **ungauged reaches**: NWIS only has data where a physical gauge exists, so if your analysis needs historical streamflow at a reach with no gauge, NWM's retrospective archive (Zarr, on AWS, (see Further Reading below)) is the only source for that, since it's a modeled reconstruction covering every reach in the network, not just gauged ones.
+
+
+### Temporal scaling
+
+What is the recommended way to download data for one location but the full period of record?
+
+This depends on what "full period of record" means for your use case. If you want **historical, observed** streamflow, use USGS NWIS (`hydrotools.nwis_client`). It's the authoritative gauged record and a single call returns the full period a gauge has been active. If you specifically need NWM's own long-running **forecast** history (e.g. to evaluate forecast skill over time), that means retrieving many individual forecast cycles via `hydrotools`, one `reference_time` at a time. See [Parallelization](#parallelization) below, since this quickly becomes a large-N-of-small-requests problem rather than a single bulk pull.
+
+### Spatial scaling
+
+What is the recommended way to download data for all locations but a small time range?
+
+Start with **discovery** to build your list of COMIDs (e.g. all reaches in a HUC or bounding box), then pass that list to the download step in a single batched request rather than looping one-COMID-at-a-time.
+
+[Fill in: concrete code example, and note whether hydrotools supports batched/vectorized COMID lists vs. requiring iteration.]
+
+### Parallelization
+
+If I am working on improving efficiency of my code through parallelization, what should I do vs avoid?
+
+[Fill in: e.g. guidance on respecting rate limits / concurrent connection limits to NOMADS or GCP, whether to parallelize by file (time step) vs. by feature, recommended tools (e.g. `dask`, `multiprocessing`), and any known pitfalls specific to NWM's file layout.]
+
+### [...]
+
+## Further reading
+
+* NLDI documentation: https://api.water.usgs.gov/docs/nldi
+* OWPHydroTools (hydrotools) GitHub repo: https://github.com/NOAA-OWP/hydrotools
+* OWPHydroTools (NWM Client): https://pypi.org/project/hydrotools.nwm-client/8.0.0/ 
+* USGS NWIS (recommended source for historical, gauged streamflow): https://waterdata.usgs.gov/nwis
+* NWM retrospective archive (Zarr, AWS, for the ungauged-reach case only): https://registry.opendata.aws/nwm-archive/
 
 ## Best practices FAQs
 
@@ -18,21 +148,3 @@ See sections below for answers and code examples to the following questions.
 * What is the recommended way to download data across **all locations for a small time range**?
 * If I am working on improving efficiency through **code parallelization**, what should I do vs avoid?
 * [...]
-
-### Temporal scaling
-
-What is the recommended way to download data for one location but the full period of record?
-
-### Spatial scaling
-
-What is the recommended way to download data for all locations but a small time range?
-
-### Parallelization
-
-If I am working on improving efficiency of my code through parallelization, what should I do vs avoid?
-
-### [...]
-
-## Further reading
-
-[links out to agency pages on more information, can be duplicates of pages already referenced above]
