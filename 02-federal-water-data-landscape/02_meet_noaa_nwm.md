@@ -1,19 +1,22 @@
 # Meet NOAA NWM
 
-| Location Identifier | River variable | River variable unit | Time / resolution | Data Quality Flag(s) |
+| Location Identifier | Variable | Variable unit | Time / resolution | Data Quality Flag(s) |
 |---|---|---|---|---|
 | `feature_id` (NHDPlus reach/COMID) | streamflow | m³/s | Hourly (Analysis & Short-Range); 3-hourly (Medium-Range); ~daily cycling, 3-hr steps (Long-Range); hourly (Retrospective, 1979–present) | No per-value flag — quality is tied to model version (v1.2 → v2.0 → v2.1 → v3.0); see [version history](#dataset-derivation) |
  
-The National Water Model (NWM) is produced by NOAA's [Office of Water Prediction](https://water.noaa.gov/about/nwm) (OWP), part of the National Weather Service. NWM is a hydrologic modeling framework, not an observational network — it simulates and forecasts streamflow (along with soil moisture, snowpack, and other water-budget variables) for over 3.4 million miles of rivers and streams across the U.S. and its territories by combining weather forecasts, land surface physics, and channel routing. It exists to fill the huge gap between the roughly 8,000 USGS streamgages and the 2.7+ million reaches that make up the U.S. river network, giving forecasters, emergency managers, and floodplain managers guidance in places with no gage at all. Learn more at the [NWM landing page](https://water.noaa.gov/about/nwm), [National Water Prediction Service](https://water.noaa.gov/) viewer, and [CIROH's NWM overview](https://hub.ciroh.org/docs/products/national-water-model/).
+The National Water Model (NWM) is produced by NOAA's [Office of Water Prediction](https://water.noaa.gov/about/nwm) (OWP), part of the National Weather Service. NWM is a hydrologic modeling framework, not an observational network — it simulates and forecasts streamflow (along with soil moisture, snowpack, and other water-budget variables) for over 3.4 million miles of rivers and streams across the U.S. and its territories by combining weather forecasts, land surface physics, and channel routing. It exists to fill the huge gap between the rougly ~3600 National Water Service (NWS) forecast points and the entire river network for CONUS, giving forecasters, emergency managers, and floodplain managers guidance in places with no data. Learn more at the [NWM landing page](https://water.noaa.gov/about/nwm), [National Water Prediction Service](https://water.noaa.gov/) viewer, and [CIROH's NWM overview](https://hub.ciroh.org/docs/products/national-water-model/).
 
 ## Terminology
 
 For this training, we'll map NWM's own vocabulary onto the shared terms used across all dataset pages:
  
-- **Location Identifier → `feature_id`**: Each stream reach in the model has a unique `feature_id`, which corresponds to a COMID in the NHDPlus stream network. This is *not* the same as a USGS gage number (`site_no`). If you want to compare NWM output to observed data, you need a `feature_id`-to-`site_no` crosswalk.
-- **River variable → streamflow**: Channel discharge at a reach. NWM also outputs many other variables (soil moisture, snowpack, evapotranspiration, reservoir levels) that aren't the focus of this training.
-- **River variable unit → m³/s**: Cubic meters per second, consistent across all NWM configurations.
-- **Data Quality Flag(s) → model version**: NWM has no per-observation QA/QC flag the way a sensor network does. Instead, "quality" is a function of *which model version and configuration* produced the value — see below.
+| Shared term | NWM equivalent | Notes |
+|---|---|---|
+| Location Identifier | `feature_id` | Each stream reach in the model has a unique `feature_id`, which corresponds to a COMID in the NHDPlus stream network. |
+| Variable | streamflow | Channel discharge at a reach. NWM also outputs many other variables (soil moisture, snowpack, evapotranspiration, reservoir levels) that aren't the focus of this training. |
+| Variable unit | m³/s | Cubic meters per second, consistent across all NWM configurations. |
+| Data Quality Flag(s) | model version | NWM has no per-observation QA/QC flag the way a sensor network does. Instead, quality is a function of which model version and configuration produced the value, see below. |
+
 
 ## Dataset derivation
 
@@ -30,7 +33,7 @@ NWM output is entirely modeled, not measured directly. It couples a land-surface
 
 - **Period of record:** Retrospective/reanalysis simulation covers 1979–present (continuously extended); operational forecasts have run since August 2016
 - **Frequency/resolution:** Varies by configuration — Analysis & Assimilation and Short-Range are hourly; Medium-Range is 3-hourly; Long-Range is 6-hourly; the Retrospective dataset is hourly throughout
-- **Update cadence:** Short-Range forecasts cycle hourly over CONUS; Medium- and Long-Range forecasts are produced four times a day; forecast latency is roughly 1–2 hours after cycle time (mostly driven by the lag in incoming weather-forcing data), not a fixed multi-hour push like some sensor networks
+- **Update cadence:** Short-Range forecasts cycle hourly over CONUS; Medium- and Long-Range forecasts are produced four times a day; forecast latency is roughly 1–2 hours after cycle time (mostly driven by the lag in incoming weather-forcing data)
 
 ## Data content
 - **Primary variable:** streamflow (m³/s) at each `feature_id`
