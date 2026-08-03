@@ -26,6 +26,9 @@ project:
         - file: '03-federal-water-data-access-retrieval/02_access_noaa_nwm.md'
         - file: '03-federal-water-data-access-retrieval/03_access_usgs_nwis.md'
     - title: Federal Water Data Synthesis
-      children: []
+      children: 
+        - file: '04-federal-water-data-synthesis/00_introduction.md'
+        - file: '04-federal-water-data-synthesis/01_comparative_overview.md'
+        - file: '04-federal-water-data-synthesis/02_synthesize_river_data.md'
 site:
   template: book-theme
