@@ -8,7 +8,7 @@ The three Federal datasets used in this course are built from very different spa
 
 * **USGS NWIS streamflow** data are available at discrete points along the river network. These data represent observed measurements from sensors in the streams themselves, and are collected at a limited number of locations in the contiguous United States, Alaska, Hawaii, and US territories. Streams with streamflow data in USGS NWIS vary greatly in size, from intermittent and ephemeral streams to the mouth of the Mississippi. Some locations are also in coastal zones, where tides can impact streamflow data. 
 * **NOAA NWM streamflow** data are available for all river reaches in the National Hydrography Dataset (NHD) [TODO: ADD MORE]
-* **NASA SWOT water surface elevation** data are derived from a remotely-sensed raster of water extent. In their more raw form, these data are not spatially limited and can exist for every pixel across the globe. In the hydrology-linked data product `L2_HR_RiverSP`, the data are mapped to 10km river reaches based on NASA's underlying river geometries and are available for rivers globally. NASA SWOT produces water surface elevation data for streams at least 100m wide.
+* **NASA SWOT water surface elevation** data are derived from a remotely-sensed raster of water extent. In their more raw form, these data are not spatially limited and can exist for every pixel across the globe. In the hydrology-linked data product `L2_HR_RiverSP`, the data are mapped to 10km river reaches based on NASA's underlying river geometries (SWORD) and are available for rivers globally. NASA SWOT produces water surface elevation data for streams at least 100m wide.
 
 ## Temporal availability
 
@@ -21,7 +21,10 @@ Much like their spatial coverage, the three data products also represent vastly 
 ## Accuracy
 
 [details here, can we compare/contrast here? They are wildly different bc of observed vs modeled vs observed from space. Maybe just some accuracy statements unique to each is what would be helpful.]
+
 [limitation of gage measurements in out-of-bank flood conditions, rating curve accuracy/adjustments]
+
+[NASA provides uncertainty per measurement via `wse_u`]
 
 ## Data Providers Recommendations
 
@@ -29,4 +32,5 @@ Much like their spatial coverage, the three data products also represent vastly 
 
 ## Further reading
 
+- [NASA's SWOT River Database (SWORD)](https://github.com/SWORD-Global/SWORD)
 - [USGS Gages through the Ages](https://labs.waterdata.usgs.gov/visualizations/gages-through-the-ages/index.html)
