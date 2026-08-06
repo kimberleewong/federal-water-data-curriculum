@@ -4,7 +4,7 @@ NOAA National Water Model (NWM) streamflow data lives in a few different places 
 
 
 1. **Programmatic data discovery**: NWM identifies reaches using COMIDs, which come from the NHDPlusV2 hydrography dataset (a USGS product, not a NOAA one). Before you can download streamflow for a location, you first need to find the COMID that corresponds to it. This is handled by USGS's Network Linked Data Index (NLDI), a separate service from wherever the NWM output files live.
-1. **Programmatic data downloads**: once you have COMID(s) in hand, `hydrotools` (from NOAA-OWP) retrieves forecast values. This module focuses on **forecast** data. NWM's forecast products (short/medium/long range) are what set it apart from other streamflow datasets, since they predict rather than just record. For historical, observed streamflow, USGS NWIS is the recommended source instead; see the note at the end of this section for the one case (ungauged reaches) where NWM's own historical/retrospective archive is still relevant.
+1. **Programmatic data downloads**: once you have COMID(s) in hand, `hydrotools` (from NOAA-OWP) retrieves forecast values. This module focuses on **forecast** data. NWM's forecast products (short/medium/long range) are what set it apart from other streamflow datasets, since they predict rather than just record. For historical, observed streamflow, USGS NWIS is the recommended source instead; however, see the note at the end of this section for how NWM's historical/retrospective archive is relevant for ungauged reaches.
 
 If you already know your COMID(s), you can skip programmatic data discovery.
 
