@@ -23,7 +23,7 @@ This installs everything needed for both discovery (`pynhd`) and downloads (`hyd
 
 ## Programmatic data discovery
 
-Before you download or try to access the data itself, a common first step is to *discover* or *find* the specific reach(es) you need. You don't want to page through the whole NWM domain just to learn which COMID matches your location. Doing this discovery step first also lets you build a COMID list once and reuse it, which matters more once you get to the spatial-scaling FAQ below.
+Before you download or try to access the data itself, a common first step is to *discover* or *find* the specific reach(es) you need. You don't want to page through the whole NWM domain just to learn which COMID matches your location. Doing this discovery step first also lets you build a COMID list once and reuse it, which matters more once you get to spatially scaling (see FAQs below).
 
 A GUI (graphic user interface) approach exists here too: NOAA's own [interactive map](https://water.noaa.gov/map) lets you click a point and read off a reach ID directly, which is functionally the same identifier as a COMID. That's a fine way to explore or spot-check, but a programmatic discovery step keeps your work reproducible and reusable, and it's worth capturing in code even if you first found the reach by clicking around.
 
