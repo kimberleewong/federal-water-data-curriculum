@@ -109,6 +109,8 @@ print(forecast_data.head())
 
 **A note on historical data:** for observed, historical streamflow, use USGS NWIS (`hydrotools.nwis_client`) rather than NWM's own retrospective archive. NWIS is the authoritative source for gauged, historical data and doesn't require the model-file access patterns covered above. The one exception is **ungauged reaches**: NWIS only has data where a physical gauge exists, so if your analysis needs historical streamflow at a reach with no gauge, NWM's retrospective archive (Zarr, on AWS, (see Further Reading below)) is the only source for that, since it's a modeled reconstruction covering every reach in the network, not just gauged ones.
 
+[TODO: Insert examples for medium and long-range forecasts + some code and figures that show the outputs as timeseries plots]
+
 
 ### Temporal scaling
 
