@@ -10,7 +10,7 @@ If you already know your COMID(s), you can skip programmatic data discovery.
 
 ## Tools and environment setup
 
-we're using a dedicated conda environment for this one so its dependencies don't collide with what any other page needs. 
+We're using a dedicated `conda` environment to manage dependency collisions with other lessons. [TODO / for consideration: should we use environments to avoid dependency collisions? Or try to actually address any dependency collisions? We ultimately want people to be able to use all three datasets on their computers, and give them the knowledge and tools to do so]
 
 ```bash
 conda create -n nwm-env python=3.11 -y
